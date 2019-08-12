@@ -17,7 +17,21 @@ struct args {
 };
 
 void parse_arguments(int argc, char** argv, struct args* args) {
-    char opt;
+    /* Long options definition */
+    static struct option long_options[] = {
+        {"active-color", required_argument, 0, 0},
+        {"caps-label", required_argument, 0, 0},
+        {"inactive-color", required_argument, 0, 0},
+        {"num-label", required_argument, 0, 0}
+    };
+    int long_opt_index, opt;
+
+    /* This array maps long option indices to the corresponding args fields */
+    char** long_opts_to_args[4];
+    long_opts_to_args[0] = &(args->active_color);
+    long_opts_to_args[1] = &(args->caps_label);
+    long_opts_to_args[2] = &(args->inactive_color);
+    long_opts_to_args[3] = &(args->num_label);
 
     /* Setting defaults */
     args->caps_label = NULL;
@@ -26,8 +40,13 @@ void parse_arguments(int argc, char** argv, struct args* args) {
     args->inactive_color = DEFAULT_INACTIVE_COLOR;
 
     /* Parsing CLI options */
-    while ((opt = getopt(argc, argv, "a:c:i:n:")) != -1) {
+    while ((opt = getopt_long(argc, argv, "a:c:i:n:", long_options,
+            &long_opt_index)) != -1) {
         switch (opt) {
+            case 0:
+                *(long_opts_to_args[long_opt_index]) = optarg;
+                break;
+
             case 'a':
                 args->active_color = optarg;
                 break;
@@ -45,21 +64,21 @@ void parse_arguments(int argc, char** argv, struct args* args) {
                 break;
 
             default:
-                fprintf(stderr, "Unrecognized option: %c\n", opt);
+                /* getopt has already printed an error message */
                 exit(EXIT_FAILURE);
         }
     }
 }
 
 unsigned long get_leds() {
-    Display* display = XOpenDisplay(NULL);
     XKeyboardState keyboard;
+    Display* display = XOpenDisplay(NULL);
     XGetKeyboardControl(display, &keyboard);
     return keyboard.led_mask;
 }
 
 void show_indicator(unsigned long led, const char* label,
-    const struct args* args) {
+        const struct args* args) {
     printf("<span color='%s'>%s</span>",
         led ? args->active_color : args->inactive_color, label);
 }
