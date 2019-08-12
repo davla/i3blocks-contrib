@@ -9,6 +9,46 @@
 #define DEFAULT_ACTIVE_COLOR ("#00FF00")
 #define DEFAULT_INACTIVE_COLOR ("#666666")
 
+#ifndef ACTIVE_COLOR
+    #define ACTIVE_COLOR_VALUE (ifnull(getenv("ACTIVE_COLOR"), DEFAULT_ACTIVE_COLOR))
+    #define ACTIVE_COLOR_OPT "a:"
+    #define ACTIVE_COLOR_LONG_INDEX (0)
+#else
+    #define ACTIVE_COLOR_VALUE (ACTIVE_COLOR)
+    #define ACTIVE_COLOR_OPT ""
+    #define ACTIVE_COLOR_LONG_INDEX (-1)
+#endif
+#ifndef CAPS_LABEL
+    #define CAPS_LABEL (getenv("CAPS_LABEL"))
+    #define CAPS_LABEL_OPT "c:"
+    #define CAPS_LABEL_LONG_INDEX (ACTIVE_COLOR_LONG_INDEX + 1)
+#else
+    #define CAPS_LABEL_VALUE (CAPS_LABEL)
+    #define CAPS_LABEL_OPT ""
+    #define CAPS_LABEL_LONG_INDEX (ACTIVE_COLOR_LONG_INDEX)
+#endif
+#ifndef INACTIVE_COLOR
+    #define INACTIVE_COLOR_VALUE (ifnull(getenv("INACTIVE_COLOR"), DEFAULT_INACTIVE_COLOR))
+    #define INACTIVE_COLOR_OPT "i:"
+    #define INACTIVE_COLOR_LONG_INDEX (CAPS_LABEL_LONG_INDEX + 1)
+#else
+    #define INACTIVE_COLOR_VALUE (INACTIVE_COLOR)
+    #define INACTIVE_COLOR_OPT ""
+    #define INACTIVE_COLOR_LONG_INDEX (CAPS_LABEL_LONG_INDEX)
+#endif
+#ifndef NUM_LABEL
+    #define NUM_LABEL_VALUE (getenv("NUM_LABEL"))
+    #define NUM_LABEL_OPT "n:"
+    #define NUM_LABEL_LONG_INDEX (INACTIVE_COLOR_LONG_INDEX + 1)
+#else
+    #define NUM_LABEL_VALUE (NUM_LABEL)
+    #define NUM_LABEL_OPT ""
+    #define NUM_LABEL_LONG_INDEX (INACTIVE_COLOR_LONG_INDEX)
+#endif
+
+#define GETOPT_STRING (ACTIVE_COLOR_OPT CAPS_LABEL_OPT INACTIVE_COLOR_OPT NUM_LABEL_OPT)
+#define HAS_LONG_OPTIONS (NUM_LABEL_LONG_INDEX > -1)
+
 struct args {
     char* caps_label;
     char* num_label;
@@ -23,50 +63,77 @@ char* ifnull(char* a, char* b) {
 void parse_arguments(int argc, char** argv, struct args* args) {
     /* Long options definition */
     static struct option long_options[] = {
-        {"active-color", required_argument, 0, 0},
-        {"caps-label", required_argument, 0, 0},
-        {"inactive-color", required_argument, 0, 0},
-        {"num-label", required_argument, 0, 0}
+        #ifndef ACTIVE_COLOR
+            {"active-color", required_argument, 0, 0},
+        #endif
+        #ifndef CAPS_LABEL
+            {"caps-label", required_argument, 0, 0},
+        #endif
+        #ifndef INACTIVE_COLOR
+            {"inactive-color", required_argument, 0, 0},
+        #endif
+        #ifndef NUM_LABEL
+            {"num-label", required_argument, 0, 0}
+        #endif
     };
     int long_opt_index, opt;
 
     /* This array maps long option indices to the corresponding args fields */
-    char** long_opts_to_args[4];
-    long_opts_to_args[0] = &(args->active_color);
-    long_opts_to_args[1] = &(args->caps_label);
-    long_opts_to_args[2] = &(args->inactive_color);
-    long_opts_to_args[3] = &(args->num_label);
+    #if HAS_LONG_OPTIONS
+        char** long_opts_to_args[NUM_LABEL_LONG_INDEX + 1];
+        #ifndef ACTIVE_COLOR
+            long_opts_to_args[ACTIVE_COLOR_LONG_INDEX] = &(args->active_color);
+        #endif
+        #ifndef CAPS_LABEL
+            long_opts_to_args[CAPS_LABEL_LONG_INDEX] = &(args->caps_label);
+        #endif
+        #ifndef INACTIVE_COLOR
+            long_opts_to_args[INACTIVE_COLOR_LONG_INDEX] = &(args->inactive_color);
+        #endif
+        #ifndef NUM_LABEL
+            long_opts_to_args[NUM_LABEL_LONG_INDEX] = &(args->num_label);
+        #endif
+    #endif
 
     /* Checking environment variables and setting defaults */
-    args->caps_label = getenv("CAPS_LABEL");
-    args->num_label = getenv("NUM_LABEL");
-    args->active_color = ifnull(getenv("ACTIVE_COLOR"), DEFAULT_ACTIVE_COLOR);
-    args->inactive_color = ifnull(getenv("INACTIVE_COLOR"),
-            DEFAULT_INACTIVE_COLOR);
+    args->active_color = ACTIVE_COLOR_VALUE;
+    args->caps_label = CAPS_LABEL_VALUE;
+    args->inactive_color = INACTIVE_COLOR_VALUE;
+    args->num_label = NUM_LABEL_VALUE;
 
     /* Parsing CLI options */
-    while ((opt = getopt_long(argc, argv, "a:c:i:n:", long_options,
+    while ((opt = getopt_long(argc, argv, GETOPT_STRING, long_options,
             &long_opt_index)) != -1) {
         switch (opt) {
-            case 0:
-                *(long_opts_to_args[long_opt_index]) = optarg;
-                break;
+            #if HAS_LONG_OPTIONS
+                case 0:
+                    *(long_opts_to_args[long_opt_index]) = optarg;
+                    break;
+            #endif
 
+            #ifndef ACTIVE_COLOR
             case 'a':
                 args->active_color = optarg;
                 break;
+            #endif
 
+            #ifndef CAPS_LABEL
             case 'c':
                 args->caps_label = optarg;
                 break;
+            #endif
 
+            #ifndef INACTIVE_COLOR
             case 'i':
                 args->inactive_color = optarg;
                 break;
+            #endif
 
+            #ifndef NUM_LABEL
             case 'n':
                 args->num_label = optarg;
                 break;
+            #endif
 
             default:
                 /* getopt has already printed an error message */
@@ -95,13 +162,21 @@ int main(int argc, char** argv) {
     parse_arguments(argc, argv, &args);
     leds = get_leds();
 
-    if (args.caps_label) {
+    #ifdef CAPS_LABEL
         show_indicator(leds & CAPS_MASK, args.caps_label, &args);
-    }
+    #else
+        if (args.caps_label) {
+            show_indicator(leds & CAPS_MASK, args.caps_label, &args);
+        }
+    #endif
 
-    if (args.num_label) {
+    #ifdef NUM_LABEL
         show_indicator(leds & NUM_MASK, args.num_label, &args);
-    }
+    #else
+        if (args.num_label) {
+            show_indicator(leds & NUM_MASK, args.num_label, &args);
+        }
+    #endif
 
     printf("\n");
 }

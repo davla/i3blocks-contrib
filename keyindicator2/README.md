@@ -4,4 +4,3 @@ Shows the status of toggler and dead keys
 
 ## TODO
 - Help
-- Hardcode options
