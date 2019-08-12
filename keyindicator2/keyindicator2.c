@@ -16,6 +16,10 @@ struct args {
     char* inactive_color;
 };
 
+char* ifnull(char* a, char* b) {
+    return a ? a : b;
+}
+
 void parse_arguments(int argc, char** argv, struct args* args) {
     /* Long options definition */
     static struct option long_options[] = {
@@ -33,11 +37,12 @@ void parse_arguments(int argc, char** argv, struct args* args) {
     long_opts_to_args[2] = &(args->inactive_color);
     long_opts_to_args[3] = &(args->num_label);
 
-    /* Setting defaults */
-    args->caps_label = NULL;
-    args->num_label = NULL;
-    args->active_color = DEFAULT_ACTIVE_COLOR;
-    args->inactive_color = DEFAULT_INACTIVE_COLOR;
+    /* Checking environment variables and setting defaults */
+    args->caps_label = getenv("CAPS_LABEL");
+    args->num_label = getenv("NUM_LABEL");
+    args->active_color = ifnull(getenv("ACTIVE_COLOR"), DEFAULT_ACTIVE_COLOR);
+    args->inactive_color = ifnull(getenv("INACTIVE_COLOR"),
+            DEFAULT_INACTIVE_COLOR);
 
     /* Parsing CLI options */
     while ((opt = getopt_long(argc, argv, "a:c:i:n:", long_options,

@@ -3,6 +3,5 @@
 Shows the status of toggler and dead keys
 
 ## TODO
-- env variables
 - Help
 - Hardcode options
