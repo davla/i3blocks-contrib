@@ -7,6 +7,12 @@ endif
 ifdef INACTIVE_COLOR
 	MACROS := $(MACROS) -D'INACTIVE_COLOR="$(INACTIVE_COLOR)"'
 endif
+ifdef NO_CAPS
+	MACROS := $(MACROS) -D NO_CAPS
+endif
+ifdef NO_NUM
+	MACROS := $(MACROS) -D NO_NUM
+endif
 ifdef NUM_LABEL
 	MACROS := $(MACROS) -D'NUM_LABEL="$(NUM_LABEL)"'
 endif
