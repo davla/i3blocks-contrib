@@ -1,11 +1,24 @@
+/*
+    This file prints activation indicators for Caps Lock and Num Lock. It is
+    meant to be used as a command for i3blocks. It outputs text in different
+    colors based on Caps Lock and Num Lock status, in pango markup.
+*/
+
+/* If both NO_CAPS and NO_NUM are defined, no output will ever be printed. */
 #if defined NO_CAPS && defined NO_NUM
     #error Both NO_CAPS and NO_NUM defined
 #endif
 
+/* Shorthand to check whether any CLI option should be processed at all. */
 #if defined ACTIVE_COLOR && defined CAPS_LABEL && defined INACTIVE_COLOR && defined NUM_LABEL
     #define NO_ARGS
 #endif
 
+/*
+    Defining macros for whether single CLI options should be processed: if the
+    corresponding macro is defined, the CLI option should not exist and raise
+    an error.
+*/
 #ifndef ACTIVE_COLOR
     #define ACTIVE_COLOR_HAS_OPT
 #endif
@@ -19,6 +32,10 @@
     #define NUM_LABEL_HAS_OPT
 #endif
 
+/*
+    Setting labels to null when they are disabled. Necessary for the
+    *_LABEL_VALUE macros below not to explode.
+*/
 #ifdef NO_CAPS
     #undef CAPS_LABEL
     #define CAPS_LABEL (NULL)
@@ -28,6 +45,7 @@
     #define NUM_LABEL (NULL)
 #endif
 
+/* Optimizing includes ;-P */
 #ifndef NO_ARGS
     #include <getopt.h>
 #endif
@@ -35,12 +53,17 @@
 #include <stdio.h>
 #include <X11/Xlib.h>
 
+/* Bit masks for X11 keyboard leds. */
 #define CAPS_MASK (0x1)
 #define NUM_MASK (0x2)
 
+/* Default color values. */
 #define DEFAULT_ACTIVE_COLOR ("#00FF00")
 #define DEFAULT_INACTIVE_COLOR ("#666666")
 
+/*
+
+*/
 #ifdef ACTIVE_COLOR_HAS_OPT
     #define ACTIVE_COLOR_VALUE (ifnull(getenv("ACTIVE_COLOR"), DEFAULT_ACTIVE_COLOR))
     #define ACTIVE_COLOR_OPT "a:"
@@ -78,8 +101,10 @@
     #define NUM_LABEL_LONG_INDEX (INACTIVE_COLOR_LONG_INDEX)
 #endif
 
+/* getopt string. Contains only the options for undefined macros. */
 #define GETOPT_STRING (ACTIVE_COLOR_OPT CAPS_LABEL_OPT INACTIVE_COLOR_OPT NUM_LABEL_OPT)
 
+/* Convenience data structure for CLI arguments. */
 struct args {
     char* caps_label;
     char* num_label;
