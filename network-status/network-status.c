@@ -146,6 +146,27 @@ void if_args_free(struct if_args* this) {
     }
 }
 
+void if_args_validate(struct if_args* this) {
+    while (this) {
+        if (!this->name) {
+            fprintf(stderr, "Missing interface name (type: %s, label: %s)\n",
+                this->type, this->label);
+            exit(EXIT_FAILURE);
+        }
+        if (!this->type) {
+            fprintf(stderr, "Missing interface type (name: %s, label: %s)\n",
+                this->name, this->label);
+            exit(EXIT_FAILURE);
+        }
+        if (!this->label) {
+            fprintf(stderr, "Missing interface label (name: %s, type: %s)\n",
+                this->name, this->type);
+            exit(EXIT_FAILURE);
+        }
+        this = this->next;
+    }
+}
+
 void handle_opt(int opt, struct args* args) {
     switch (opt) {
         case 0:
@@ -231,16 +252,14 @@ void parse_arguments(int argc, char** argv, struct args* args) {
             handle_opt(opt, args);
         }
     }
+
+    if_args_validate(args->interfaces);
 }
 
 int main(int argc, char** argv) {
     struct args args;
 
     parse_arguments(argc, argv, &args);
-    for (struct if_args* curr = args.interfaces; curr; curr = curr->next) {
-        printf("name: %s, type: %s, label: %s\n", curr->name, curr->type,
-            curr->label);
-    }
     // leds = get_leds();
     //
     // #ifndef NO_CAPS
