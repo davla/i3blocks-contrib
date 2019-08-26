@@ -70,7 +70,7 @@
 //
 // #define GETOPT_STRING (ACTIVE_COLOR_OPT CABLE_LABEL_OPT INACTIVE_COLOR_OPT WIRELESS_LABEL_OPT)
 //
-// #include <errno.h>
+#include <errno.h>
 #ifndef NO_ARGS
     #include <getopt.h>
 #endif
@@ -254,6 +254,15 @@ void parse_arguments(int argc, char** argv, struct args* args) {
     }
 
     if_args_validate(args->interfaces);
+}
+
+int if_match(const char* sys_name, const char* arg_name) {
+    printf("sys: %s - arg: %s\n", sys_name, arg_name);
+    if (!strcmp(arg_name, sys_name)) {
+        return 1;
+    }
+
+    return 0;
 }
 
 int main(int argc, char** argv) {
