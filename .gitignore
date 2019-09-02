@@ -1,1 +1,13 @@
-*.swp
+*.o
+i3blocks
+.deps/
+Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache/
+build-aux/
+config.log
+config.status
+configure
+i3blocks-config.h*
+stamp-h1
