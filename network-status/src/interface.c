@@ -59,32 +59,26 @@ int interface_has_label(struct interface* this) {
 
 void interface_set_name(struct interface* this, const char* value) {
     this->name = value;
-}
-void interface_set_type(struct interface* this, const char* value) {
-    if (!(strcmp("ethernet", value) && strcmp("cable", value))) {
-        this->type = CABLE;
-    }
-    else if (!(strcmp("wireless", value) && strcmp("wifi", value))) {
-        this->type = WIRELESS;
-    }
+    interface_infer_type(this);
 }
 void interface_set_label(struct interface* this, const char* value) {
     this->label = value;
 }
 
-void interface_infer(struct interface* this) {
-    if (!interface_has_type(this)) {
-        if (is_cable_name(this->name)) {
-            this->type = CABLE;
-        }
-        else if (is_wireless_name(this->name)) {
-            this->type = WIRELESS;
-        }
-        else if (interface_has_name(this)) {
-            this->type = UNNECESSARY;
-        }
+void interface_infer_type(struct interface* this) {
+    if (!(strcmp("ethernet", this->name) && strcmp("cable", this->name))
+        || is_cable_name(this->name)) {
+        this->type = CABLE;
     }
-
+    else if (!(strcmp("wireless", this->name) && strcmp("wifi", this->name))
+        || is_wireless_name(this->name)) {
+        this->type = WIRELESS;
+    }
+    else if (interface_has_name(this)) {
+        this->type = UNNECESSARY;
+    }
+}
+void interface_infer_label(struct interface* this) {
     if (!interface_has_label(this)) {
         switch (this->type) {
             case CABLE:
@@ -99,6 +93,10 @@ void interface_infer(struct interface* this) {
                 break;
         }
     }
+}
+void interface_infer(struct interface* this) {
+    interface_infer_type(this);
+    interface_infer_label(this);
 }
 
 int interface_match(struct interface* this, const char* name) {

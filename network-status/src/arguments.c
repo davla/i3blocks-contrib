@@ -1,4 +1,5 @@
 #include <getopt.h>
+#include <stdio.h>
 
 #include "arguments.h"
 #include "common.h"
@@ -66,12 +67,6 @@ void handle_opt(int opt, struct args* args) {
             args->medium_level = atof(optarg);
             break;
 
-        case 8:
-        case 't':
-            interfaces_add_field(&args->interfaces, optarg,
-                interface_has_type, interface_set_type);
-            break;
-
         default:
             /* getopt has already printed an error message */
             exit(EXIT_FAILURE);
@@ -91,7 +86,7 @@ void parse_arguments(int argc, char** argv, struct args* args) {
         {"interface", required_argument, 0, 0},
         {"label", required_argument, 0, 0},
         {"medium-level", required_argument, 0, 0},
-        {"type", required_argument, 0, 0},
+        {0, 0, 0}
     };
     int long_opt_index, opt;
 
@@ -103,7 +98,7 @@ void parse_arguments(int argc, char** argv, struct args* args) {
     args->bad_color = "#FF0000";
     args->down_color = "#666666";
 
-    while ((opt = getopt_long(argc, argv, "B:D:G:M:g:hi:l:m:t:", long_options,
+    while ((opt = getopt_long(argc, argv, "B:D:G:M:g:hi:l:m:", long_options,
             &long_opt_index)) != -1) {
         if (!opt) {
             handle_opt(long_opt_index, args);

@@ -25,9 +25,10 @@ int interface_has_type(struct interface* this);
 int interface_has_label(struct interface* this);
 
 void interface_set_name(struct interface* this, const char* value);
-void interface_set_type(struct interface* this, const char* value);
 void interface_set_label(struct interface* this, const char* value);
 
+void interface_infer_type(struct interface* this);
+void interface_infer_label(struct interface* this);
 void interface_infer(struct interface* this);
 int interface_match(struct interface* this, const char* name);
 void interface_validate(struct interface* this);
