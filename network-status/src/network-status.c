@@ -73,6 +73,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 #include <net/if.h>
 
 #include "arguments.h"
@@ -80,22 +81,26 @@
 #include "interface.h"
 
 void interfaces_filter(struct interface** ifs) {
+    struct if_nameindex* if_name_beg;
     struct if_nameindex* if_name;
     struct interface* if_curr;
     struct interface** prev;
     struct interface* tmp = NULL;
     struct interface** if_ok = &tmp;
 
-    if (!(if_name = if_nameindex())) {
+    if (!(if_name_beg = if_nameindex())) {
         perror("Error in filter_interfaces");
         exit(EXIT_FAILURE);
     }
 
+    if_name = if_name_beg;
     while (if_name->if_index && if_name->if_name) {
         prev = ifs;
 
         for (if_curr = *ifs; if_curr; if_curr = if_curr->next) {
             if (interface_match(if_curr, if_name->if_name)) {
+                interface_set_name(if_curr, if_name->if_name);
+
                 *prev = if_curr->next;
 
                 *if_ok = if_curr;
@@ -110,6 +115,7 @@ void interfaces_filter(struct interface** ifs) {
     }
 
     interface_free(*ifs);
+    if_freenameindex(if_name_beg);
     *if_ok = NULL;
 
     *ifs = tmp;
@@ -120,7 +126,7 @@ int main(int argc, char** argv) {
     struct interface* dd;
 
     parse_arguments(argc, argv, &args);
-    // interfaces_filter(&args.interfaces);
+    interfaces_filter(&args.interfaces);
 
     for (dd = args.interfaces; dd; dd = dd->next)
     {

@@ -9,7 +9,7 @@ enum interface_type {
 };
 
 struct interface {
-    const char* name;
+    char* name;
     enum interface_type type;
     const char* label;
     struct interface* next;

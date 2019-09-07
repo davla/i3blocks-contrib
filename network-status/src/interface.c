@@ -32,7 +32,11 @@ struct interface* interface_new() {
         exit(EXIT_FAILURE);
     }
 
-    new->name = "";
+    if (!(new->name = (char*) malloc(sizeof(char)))) {
+        perror("Couldn't allocate memory");
+        exit(EXIT_FAILURE);
+    }
+    *new->name = '\0';
     new->type = UNSET;
     new->label = "";
 
@@ -43,6 +47,7 @@ void interface_free(struct interface* this) {
     struct interface* tmp;
     for (tmp = this; this; tmp = this) {
         this = this->next;
+        free(tmp->name);
         free(tmp);
     }
 }
@@ -58,7 +63,12 @@ int interface_has_label(struct interface* this) {
 }
 
 void interface_set_name(struct interface* this, const char* value) {
-    this->name = value;
+    if (!(this->name = (char *) realloc(this->name,
+            sizeof(char) * (strlen(value) + 1 + 1)))) {
+        perror("Couldn't allocate memory");
+        exit(EXIT_FAILURE);
+    }
+    strcpy(this->name, value);
     interface_infer_type(this);
 }
 void interface_set_label(struct interface* this, const char* value) {
