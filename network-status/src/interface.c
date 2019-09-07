@@ -145,29 +145,3 @@ int is_wireless_name(const char* name) {
 //
 //     return ret;
 // }
-
-// struct if_name* filter_interfaces(const struct if_args* args) {
-//     struct if_nameindex* if_curr;
-//     struct if_args* arg_curr;
-//     struct if_name* names_ret = NULL;
-//     struct if_name** names = &names_ret;
-//
-//     if (!(if_curr = if_nameindex())) {
-//         perror("Error in filter_interfaces");
-//         exit(EXIT_FAILURE);
-//     }
-//
-//     while (if_curr->if_index && if_curr->if_name) {
-//         for (arg_curr = args; arg_curr; arg_curr = arg_curr->next) {
-//             if (if_matches(if_curr->if_name, arg_curr)) {
-//                 *names = if_nameindex_copy(if_curr);
-//                 names = &names->next;
-//                 break;
-//             }
-//         }
-//
-//         if_curr += 1;
-//     }
-//
-//     return names_ret;
-// }
