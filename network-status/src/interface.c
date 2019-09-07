@@ -1,7 +1,9 @@
-#include <net/if.h>
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "common.h"
-#include "interfaces.h"
+#include "interface.h"
 
 struct interface* interface_new() {
     struct interface* new;
@@ -26,19 +28,19 @@ void interface_free(struct interface* this) {
 }
 
 int interface_has_name(struct interface* this) {
-    return this->name;
+    return this->name != NULL;
 }
 int interface_has_type(struct interface* this) {
-    return this->type != NONE;
+    return this->type != UNSET;
 }
 int interface_has_label(struct interface* this) {
-    return this->label;
+    return this->label != NULL;
 }
 
-int interface_set_name(struct interface* this, const char* value) {
+void interface_set_name(struct interface* this, const char* value) {
     this->name = value;
 }
-int interface_set_type(struct interface* this, const char* value) {
+void interface_set_type(struct interface* this, const char* value) {
     if (!(strcmp("ethernet", value) && strcmp("cable", value))) {
         this->type = CABLE;
     }
@@ -46,7 +48,7 @@ int interface_set_type(struct interface* this, const char* value) {
         this->type = WIRELESS;
     }
 }
-int interface_set_label(struct interface* this, const char* value) {
+void interface_set_label(struct interface* this, const char* value) {
     this->label = value;
 }
 
@@ -72,14 +74,17 @@ void interface_infer(struct interface* this) {
             case WIRELESS:
                 this->label = "W";
                 break;
+
+            default:
+                break;
         }
     }
 }
 
-int interface_match(const interface* this, const char* name) {
+int interface_match(struct interface* this, const char* name) {
     return !strcmp(name, this->name)
-        || this->type == CABLE && is_cable_name(name)
-        || this->type == WIRELESS && is_wireless_name(name);
+        || (this->type == CABLE && is_cable_name(name))
+        || (this->type == WIRELESS && is_wireless_name(name));
 }
 
 void interface_validate(struct interface* this) {

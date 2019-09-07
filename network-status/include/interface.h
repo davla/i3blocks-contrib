@@ -9,9 +9,9 @@ enum interface_type {
 };
 
 struct interface {
-    char* name;
+    const char* name;
     enum interface_type type;
-    char* label;
+    const char* label;
     struct interface* next;
 };
 
@@ -27,7 +27,7 @@ void interface_set_type(struct interface* this, const char* value);
 void interface_set_label(struct interface* this, const char* value);
 
 void interface_infer(struct interface* this);
-void interface_match(struct interface* this, const char* name);
+int interface_match(struct interface* this, const char* name);
 void interface_validate(struct interface* this);
 
 int is_cable_name(const char* name);

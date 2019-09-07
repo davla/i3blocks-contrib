@@ -2,7 +2,7 @@
 
 #include "arguments.h"
 #include "common.h"
-#include "interfaces.h"
+#include "interface.h"
 
 void interfaces_add_field(struct interface** ifs, char* value,
         int (*has_field)(struct interface*),
@@ -57,7 +57,7 @@ void handle_opt(int opt, struct args* args) {
 
         case 6:
         case 'l':
-            interfaces_add_field(&args->interfaces, optarg
+            interfaces_add_field(&args->interfaces, optarg,
                 interface_has_label, interface_set_label);
             break;
 
