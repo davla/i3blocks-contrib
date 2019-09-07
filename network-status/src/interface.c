@@ -32,8 +32,9 @@ struct interface* interface_new() {
         exit(EXIT_FAILURE);
     }
 
-    memset(new, 0, sizeof(struct interface));
+    new->name = "";
     new->type = UNSET;
+    new->label = "";
 
     return new;
 }
@@ -47,13 +48,13 @@ void interface_free(struct interface* this) {
 }
 
 int interface_has_name(struct interface* this) {
-    return this->name != NULL;
+    return *this->name != '\0';
 }
 int interface_has_type(struct interface* this) {
     return this->type != UNSET;
 }
 int interface_has_label(struct interface* this) {
-    return this->label != NULL;
+    return *this->label != '\0';
 }
 
 void interface_set_name(struct interface* this, const char* value) {
@@ -72,19 +73,19 @@ void interface_set_label(struct interface* this, const char* value) {
 }
 
 void interface_infer(struct interface* this) {
-    if (this->type == UNSET) {
+    if (!interface_has_type(this)) {
         if (is_cable_name(this->name)) {
             this->type = CABLE;
         }
         else if (is_wireless_name(this->name)) {
             this->type = WIRELESS;
         }
-        else if (this->name) {
+        else if (interface_has_name(this)) {
             this->type = UNNECESSARY;
         }
     }
 
-    if (!this->label) {
+    if (!interface_has_label(this)) {
         switch (this->type) {
             case CABLE:
                 this->label = "C";
@@ -107,13 +108,13 @@ int interface_match(struct interface* this, const char* name) {
 }
 
 void interface_validate(struct interface* this) {
-    if (!this->label) {
+    if (!interface_has_label(this)) {
         fprintf(stderr, "Interface misses label (name: %s, type: %s)\n",
             this->name, interface_type_str(this->type));
         exit(EXIT_FAILURE);
     }
 
-    if (this->type == UNSET && !this->name) {
+    if (!(interface_has_type(this) || interface_has_name(this))) {
         fprintf(stderr, "Interface misses both type and name (label :%s)\n",
             this->label);
         exit(EXIT_FAILURE);

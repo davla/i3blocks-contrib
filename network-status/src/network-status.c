@@ -120,12 +120,12 @@ int main(int argc, char** argv) {
     struct interface* dd;
 
     parse_arguments(argc, argv, &args);
-    interfaces_filter(&args.interfaces);
+    // interfaces_filter(&args.interfaces);
 
     for (dd = args.interfaces; dd; dd = dd->next)
     {
         printf("(%s, %s, %s)\n", dd->name, interface_type_str(dd->type),
-            dd->label);        
+            dd->label);
     }
 
     interface_free(args.interfaces);
