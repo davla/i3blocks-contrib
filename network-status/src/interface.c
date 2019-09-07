@@ -5,6 +5,25 @@
 #include "common.h"
 #include "interface.h"
 
+const char* interface_type_str(const enum interface_type this) {
+    switch (this) {
+        case UNSET:
+            return "UNSET";
+
+        case CABLE:
+            return "CABLE";
+
+        case WIRELESS:
+            return "WIRELESS";
+
+        case UNNECESSARY:
+            return "UNNECESSARY";
+
+        default:
+            return "";
+    }
+}
+
 struct interface* interface_new() {
     struct interface* new;
 
@@ -90,7 +109,7 @@ int interface_match(struct interface* this, const char* name) {
 void interface_validate(struct interface* this) {
     if (!this->label) {
         fprintf(stderr, "Interface misses label (name: %s, type: %s)\n",
-            this->name, this->type);
+            this->name, interface_type_str(this->type));
         exit(EXIT_FAILURE);
     }
 

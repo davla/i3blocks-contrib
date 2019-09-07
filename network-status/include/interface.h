@@ -15,6 +15,8 @@ struct interface {
     struct interface* next;
 };
 
+const char* interface_type_str(const enum interface_type this);
+
 struct interface* interface_new();
 void interface_free(struct interface* this);
 
