@@ -1,12 +1,8 @@
-struct if_args {
-    char* name;
-    char* type;
-    char* label;
-    struct if_args* next;
-};
+#ifndef ARGUMENTS_H
+#define ARGUMENTS_H
 
 struct args {
-    struct if_args* interfaces;
+    struct interface* interfaces;
     double good_level;
     double medium_level;
     char* good_color;
@@ -16,4 +12,5 @@ struct args {
 };
 
 void parse_arguments(int argc, char** argv, struct args* args);
-void if_args_free(struct if_args* this);
+
+#endif

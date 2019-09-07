@@ -73,45 +73,15 @@
 
 #include "arguments.h"
 #include "common.h"
-
-int if_match(const char* sys_name, const char* arg_name) {
-    printf("sys: %s - arg: %s\n", sys_name, arg_name);
-    if (!strcmp(arg_name, sys_name)) {
-        return 1;
-    }
-
-    return 0;
-}
+#include "interface.h"
 
 int main(int argc, char** argv) {
     struct args args;
 
     parse_arguments(argc, argv, &args);
-    // leds = get_leds();
-    //
-    // #ifndef NO_CAPS
-    //     #ifdef CAPS_LABEL_HAS_OPT
-    //         if (args.caps_label) {
-    //             show_indicator(leds & CAPS_MASK, args.caps_label, &args);
-    //         }
-    //     #else
-    //         show_indicator(leds & CAPS_MASK, args.caps_label, &args);
-    //     #endif
-    // #endif
-    //
-    // #ifndef NO_NUM
-    //     #ifdef NUM_LABEL_HAS_OPT
-    //         if (args.num_label) {
-    //             show_indicator(leds & NUM_MASK, args.num_label, &args);
-    //         }
-    //     #else
-    //         show_indicator(leds & NUM_MASK, args.num_label, &args);
-    //     #endif
-    // #endif
+    interfaces_filter(args.interfaces);
 
-    printf("\n");
-
-    if_args_free(args.interfaces);
+    interface_free(args.interfaces);
 
     return 0;
 }

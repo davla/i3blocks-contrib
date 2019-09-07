@@ -2,75 +2,24 @@
 
 #include "arguments.h"
 #include "common.h"
+#include "interfaces.h"
 
-char** if_args_name(struct if_args* this) {
-    return &(this->name);
-}
+void interfaces_add_field(struct interface** ifs, char* value,
+        int (*has_field)(struct interface*),
+        void (*set_field)(struct interface*, const char*)) {
+    struct interface* this = *ifs;
 
-char** if_args_type(struct if_args* this) {
-    return &(this->type);
-}
-
-char** if_args_label(struct if_args* this) {
-    return &(this->label);
-}
-
-struct if_args* if_args_new() {
-    struct if_args* new;
-
-    if (!(new = malloc(sizeof(struct if_args)))) {
-        perror("Couldn't allocate memory");
-        exit(EXIT_FAILURE);
-    }
-
-    memset(new, 0, sizeof(struct if_args));
-
-    return new;
-}
-
-void if_args_add_field(struct if_args** ifs, char* value,
-        char** (*get)(struct if_args*)) {
-    struct if_args* this = *ifs;
-
-    while (this && *get(this)) {
+    while (this && has_field(this)) {
         ifs = &this->next;
         this = *ifs;
     }
 
     if (!this) {
-        this = if_args_new();
+        this = interface_new();
         *ifs = this;
     }
 
-    *get(this) = value;
-}
-
-void if_args_free(struct if_args* this) {
-    for (struct if_args* tmp = this; this; tmp = this) {
-        this = this->next;
-        free(tmp);
-    }
-}
-
-void if_args_validate(struct if_args* this) {
-    while (this) {
-        if (!this->name) {
-            fprintf(stderr, "Missing interface name (type: %s, label: %s)\n",
-                this->type, this->label);
-            exit(EXIT_FAILURE);
-        }
-        if (!this->type) {
-            fprintf(stderr, "Missing interface type (name: %s, label: %s)\n",
-                this->name, this->label);
-            exit(EXIT_FAILURE);
-        }
-        if (!this->label) {
-            fprintf(stderr, "Missing interface label (name: %s, type: %s)\n",
-                this->name, this->type);
-            exit(EXIT_FAILURE);
-        }
-        this = this->next;
-    }
+    set_field(this, value);
 }
 
 void handle_opt(int opt, struct args* args) {
@@ -102,12 +51,14 @@ void handle_opt(int opt, struct args* args) {
 
         case 5:
         case 'i':
-            if_args_add_field(&args->interfaces, optarg, if_args_name);
+            interfaces_add_field(&args->interfaces, optarg,
+                interface_has_name, interface_set_name);
             break;
 
         case 6:
         case 'l':
-            if_args_add_field(&args->interfaces, optarg, if_args_label);
+            interfaces_add_field(&args->interfaces, optarg
+                interface_has_label, interface_set_label);
             break;
 
         case 7:
@@ -117,7 +68,8 @@ void handle_opt(int opt, struct args* args) {
 
         case 8:
         case 't':
-            if_args_add_field(&args->interfaces, optarg, if_args_type);
+            interfaces_add_field(&args->interfaces, optarg,
+                interface_has_type, interface_set_type);
             break;
 
         default:
@@ -127,6 +79,8 @@ void handle_opt(int opt, struct args* args) {
 }
 
 void parse_arguments(int argc, char** argv, struct args* args) {
+    struct interface* ifs;
+
     /* Long options definition */
     static struct option long_options[] = {
         {"bad-color", required_argument, 0, 0},
@@ -159,5 +113,8 @@ void parse_arguments(int argc, char** argv, struct args* args) {
         }
     }
 
-    if_args_validate(args->interfaces);
+    for (ifs = args->interfaces; ifs; ifs = ifs->next) {
+        interface_infer(ifs);
+        interface_validate(ifs);
+    }
 }
