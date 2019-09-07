@@ -27,7 +27,7 @@ const char* interface_type_str(const enum interface_type this) {
 struct interface* interface_new() {
     struct interface* new;
 
-    if (!(new = malloc(sizeof(struct interface)))) {
+    if (!(new = (struct interface*) malloc(sizeof(struct interface)))) {
         perror("Couldn't allocate memory");
         exit(EXIT_FAILURE);
     }
