@@ -12,6 +12,8 @@
 
 #define UNSET_STATUS (-1.0)
 
+#define WIRELESS_QUALITY_FILE "/proc/net/wireless"
+
 const char* interface_type_str(const enum interface_type this) {
     switch (this) {
         case UNSET:
@@ -88,7 +90,7 @@ void interface_set_label(struct interface* this, const char* value) {
 
 double interface_check_status(struct interface* this) {
     struct ifreq if_req;
-    int socket_id, is_up;
+    int socket_id;
 
     if ((socket_id = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP)) < 0) {
         perror("Could not open socket");
@@ -103,8 +105,12 @@ double interface_check_status(struct interface* this) {
     }
     close(socket_id);
 
-    is_up = (if_req.ifr_flags & IFF_UP) && (if_req.ifr_flags & IFF_RUNNING);
-    this->status = is_up ? 100.0 : 0.0;
+    if (!(if_req.ifr_flags & IFF_UP) && (if_req.ifr_flags & IFF_RUNNING)) {
+        this->status = STATUS_DOWN;
+    }
+    else {
+        this->status = this->type == WIRELESS ? wireless_quality(this) : 100.0;
+    }
 
     return this->status;
 }
@@ -168,4 +174,48 @@ int is_cable_name(const char* name) {
 }
 int is_wireless_name(const char* name) {
     return !(strncmp("wl", name, 2) && strncmp("wlan", name, 4));
+}
+
+double wireless_quality(const char* if_name) {
+    FILE* quality_file;
+    double quality;
+    char* line;
+    size_t n;
+    size_t if_name_length = strlen(if_name);
+
+    if (!(quality_file = fopen(WIRELESS_QUALITY_FILE, "r"))) {
+        perror("wireless_quality - couldn't open " WIRELESS_QUALITY_FILE);
+        exit(EXIT_FAILURE);
+    }
+
+    do {
+        free(line);
+        line = NULL;
+        n = 0;
+
+        if (getline(&line, &n, quality_file) == -1) {
+            if (feof(quality_file)) {
+                fprintf(stderr, "Reached EOF while scanning for interface %s "
+                    "in " WIRELESS_QUALITY_FILE "\n", if_name);
+
+                fclose(quality_file);
+                free(line);
+                return UNSET_STATUS;
+            }
+
+            perror("Couldn't read line from " WIRELESS_QUALITY_FILE);
+
+            fclose(quality_file);
+            free(line);
+            exit(EXIT_FAILURE);
+        }
+
+    } while (strncmp(if_name, line, if_name_length));
+
+    sscanf(line, "%*s %*d %lf", &quality);
+
+    fclose(quality_file);
+    free(line);
+
+    return quality * 100.0 / 70.0;
 }

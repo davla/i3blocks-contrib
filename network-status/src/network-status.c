@@ -149,6 +149,11 @@ void interfaces_print_indicator(struct args* args) {
 int main(int argc, char** argv) {
     struct args args;
 
+    // double d = 233.0;
+    // scanf(argv[1], &d);
+    // printf("%lf\n", d);
+    // exit(EXIT_FAILURE);
+
     parse_arguments(argc, argv, &args);
 
     interfaces_filter(&args.interfaces);
