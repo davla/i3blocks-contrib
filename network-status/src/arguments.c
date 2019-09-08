@@ -23,69 +23,20 @@ void interfaces_add_field(struct interface** ifs, char* value,
     set_field(this, value);
 }
 
-void handle_opt(int opt, struct args* args) {
-    switch (opt) {
-        case 0:
-        case 'B':
-            args->bad_color = optarg;
-            break;
-
-        case 1:
-        case 'D':
-            args->good_color = optarg;
-            break;
-
-        case 2:
-        case 'M':
-            args->medium_color = optarg;
-            break;
-
-        case 3:
-        case 'g':
-            args->good_level = atof(optarg);
-            break;
-
-        case 4:
-        case 'h':
-            // display help
-            break;
-
-        case 5:
-        case 'i':
-            interfaces_add_field(&args->interfaces, optarg,
-                interface_has_name, interface_set_name);
-            break;
-
-        case 6:
-        case 'l':
-            interfaces_add_field(&args->interfaces, optarg,
-                interface_has_label, interface_set_label);
-            break;
-
-        case 7:
-        case 'm':
-            args->medium_level = atof(optarg);
-            break;
-
-        default:
-            /* getopt has already printed an error message */
-            exit(EXIT_FAILURE);
-    }
-}
-
 void parse_arguments(int argc, char** argv, struct args* args) {
     struct interface* ifs;
 
     /* Long options definition */
     static struct option long_options[] = {
-        {"bad-color", required_argument, 0, 0},
-        {"down-color", required_argument, 0, 0},
-        {"good-color", required_argument, 0, 0},
-        {"medium-color", required_argument, 0, 0},
-        {"good-level", required_argument, 0, 0},
-        {"interface", required_argument, 0, 0},
-        {"label", required_argument, 0, 0},
-        {"medium-level", required_argument, 0, 0},
+        {"bad-color", required_argument, NULL, 'B'},
+        {"down-color", required_argument, NULL, 'D'},
+        {"good-color", required_argument, NULL, 'G'},
+        {"medium-color", required_argument, NULL, 'M'},
+        {"good-level", required_argument, NULL, 'g'},
+        {"help", no_argument, NULL, 'h'},
+        {"interface", required_argument, NULL, 'i'},
+        {"label", required_argument, NULL, 'l'},
+        {"medium-level", required_argument, NULL, 'm'},
         {0, 0, 0}
     };
     int long_opt_index, opt;
@@ -100,11 +51,49 @@ void parse_arguments(int argc, char** argv, struct args* args) {
 
     while ((opt = getopt_long(argc, argv, "B:D:G:M:g:hi:l:m:", long_options,
             &long_opt_index)) != -1) {
-        if (!opt) {
-            handle_opt(long_opt_index, args);
-        }
-        else {
-            handle_opt(opt, args);
+        switch (opt) {
+            case 'B':
+                args->bad_color = optarg;
+                break;
+
+            case 'D':
+                args->down_color = optarg;
+                break;
+
+            case 'G':
+                args->good_color = optarg;
+                break;
+
+            case 'M':
+                args->medium_color = optarg;
+                break;
+
+            case 'g':
+                args->good_level = atof(optarg);
+                break;
+
+            case 'h':
+                // display help
+                break;
+
+            case 'i':
+                interfaces_add_field(&args->interfaces, optarg,
+                    interface_has_name, interface_set_name);
+                break;
+
+            case 'l':
+                interfaces_add_field(&args->interfaces, optarg,
+                    interface_has_label, interface_set_label);
+                break;
+
+            case 'm':
+                args->medium_level = atof(optarg);
+                break;
+
+            case '?':
+            default:
+                /* getopt has already printed an error message */
+                exit(EXIT_FAILURE);
         }
     }
 
