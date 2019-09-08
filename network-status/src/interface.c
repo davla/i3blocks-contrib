@@ -190,8 +190,8 @@ int is_wireless_name(const char* name) {
 double wireless_quality(const char* if_name) {
     FILE* quality_file;
     double quality;
-    char* line;
     size_t n;
+    char* line = NULL;
     size_t if_name_length = strlen(if_name);
 
     if (!(quality_file = fopen(WIRELESS_QUALITY_FILE, "r"))) {
