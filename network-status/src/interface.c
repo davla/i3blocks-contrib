@@ -5,6 +5,8 @@
 #include "common.h"
 #include "interface.h"
 
+#define UNSET_STATUS (-1.0)
+
 const char* interface_type_str(const enum interface_type this) {
     switch (this) {
         case UNSET:
@@ -38,6 +40,7 @@ struct interface* interface_new() {
     }
     *new->name = '\0';
     new->type = UNSET;
+    new->status = UNSET_STATUS;
     new->label = "";
 
     return new;
@@ -57,6 +60,9 @@ int interface_has_name(struct interface* this) {
 }
 int interface_has_type(struct interface* this) {
     return this->type != UNSET;
+}
+int interface_has_status(struct interface* this) {
+    return this->status != UNSET_STATUS;
 }
 int interface_has_label(struct interface* this) {
     return *this->label != '\0';
@@ -92,11 +98,11 @@ void interface_infer_label(struct interface* this) {
     if (!interface_has_label(this)) {
         switch (this->type) {
             case CABLE:
-                this->label = "C";
+                interface_set_label(this, "C");
                 break;
 
             case WIRELESS:
-                this->label = "W";
+                interface_set_label(this, "W");
                 break;
 
             default:
@@ -117,13 +123,13 @@ int interface_match(struct interface* this, const char* name) {
 
 void interface_validate(struct interface* this) {
     if (!interface_has_label(this)) {
-        fprintf(stderr, "Interface misses label (name: %s, type: %s)\n",
+        fprintf(stderr, "Interface lacks label (name: %s, type: %s)\n",
             this->name, interface_type_str(this->type));
         exit(EXIT_FAILURE);
     }
 
     if (!(interface_has_type(this) || interface_has_name(this))) {
-        fprintf(stderr, "Interface misses both type and name (label :%s)\n",
+        fprintf(stderr, "Interface lacks both type and name (label :%s)\n",
             this->label);
         exit(EXIT_FAILURE);
     }
@@ -135,22 +141,3 @@ int is_cable_name(const char* name) {
 int is_wireless_name(const char* name) {
     return !(strncmp("wl", name, 2) && strncmp("wlan", name, 4));
 }
-
-// struct if_name* if_nameindex_copy(const struct if_nameindex* this) {
-//     struct if_name* ret;
-//
-//     if (!(ret = malloc(sizeof(struct if_name)))) {
-//         perror("Couldn't allocate memory")
-//         exit(EXIT_FAILURE);
-//     }
-//
-//     if (!(ret->name = malloc(sizeof(char) * strlen(this->if_name)))) {
-//         perror("Couldn't allocate memory")
-//         exit(EXIT_FAILURE);
-//     }
-//
-//     ret->next = NULL;
-//     strcpy(ret->name, this->if_name);
-//
-//     return ret;
-// }

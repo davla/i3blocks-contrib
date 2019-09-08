@@ -12,6 +12,7 @@ struct interface {
     char* name;
     enum interface_type type;
     const char* label;
+    double status;
     struct interface* next;
 };
 
@@ -22,6 +23,7 @@ void interface_free(struct interface* this);
 
 int interface_has_name(struct interface* this);
 int interface_has_type(struct interface* this);
+int interface_has_status(struct interface* this);
 int interface_has_label(struct interface* this);
 
 void interface_set_name(struct interface* this, const char* value);
