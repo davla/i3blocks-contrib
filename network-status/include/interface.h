@@ -1,6 +1,8 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
+#define STATUS_DOWN (0.0)
+
 enum interface_type {
     UNSET,
     CABLE,
@@ -29,6 +31,7 @@ int interface_has_label(struct interface* this);
 void interface_set_name(struct interface* this, const char* value);
 void interface_set_label(struct interface* this, const char* value);
 
+double interface_check_status(struct interface* this);
 void interface_infer_type(struct interface* this);
 void interface_infer_label(struct interface* this);
 void interface_infer(struct interface* this);

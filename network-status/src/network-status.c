@@ -121,18 +121,39 @@ void interfaces_filter(struct interface** ifs) {
     *ifs = tmp;
 }
 
+void interfaces_print_indicator(struct args* args) {
+    struct interface* if_curr;
+    const char* color;
+    double status;
+
+    for (if_curr = args->interfaces; if_curr; if_curr = if_curr->next) {
+        status = interface_check_status(if_curr);
+
+        if (status >= args->good_level) {
+            color = args->good_color;
+        }
+        else if (status >= args->medium_level) {
+            color = args->medium_color;
+        }
+        else if (status != STATUS_DOWN) {
+            color = args->bad_color;
+        }
+        else {
+            color = args->down_color;
+        }
+
+        printf("<span color='%s'>%s</span>", color, if_curr->label);
+    }
+}
+
 int main(int argc, char** argv) {
     struct args args;
-    struct interface* dd;
 
     parse_arguments(argc, argv, &args);
-    interfaces_filter(&args.interfaces);
 
-    for (dd = args.interfaces; dd; dd = dd->next)
-    {
-        printf("(%s, %s, %s)\n", dd->name, interface_type_str(dd->type),
-            dd->label);
-    }
+    interfaces_filter(&args.interfaces);
+    interfaces_print_indicator(&args);
+    printf("\n");
 
     interface_free(args.interfaces);
 

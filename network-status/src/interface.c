@@ -1,6 +1,11 @@
 #include <errno.h>
+#include <net/if.h>
+#include <netinet/in.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 #include "common.h"
 #include "interface.h"
@@ -79,6 +84,29 @@ void interface_set_name(struct interface* this, const char* value) {
 }
 void interface_set_label(struct interface* this, const char* value) {
     this->label = value;
+}
+
+double interface_check_status(struct interface* this) {
+    struct ifreq if_req;
+    int socket_id, is_up;
+
+    if ((socket_id = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP)) < 0) {
+        perror("Could not open socket");
+        exit(EXIT_FAILURE);
+    }
+
+    strcpy(if_req.ifr_name, this->name);
+
+    if (ioctl(socket_id, SIOCGIFFLAGS, &if_req) == -1) {
+        perror("ioctl failed");
+        exit(EXIT_FAILURE);
+    }
+    close(socket_id);
+
+    is_up = (if_req.ifr_flags & IFF_UP) && (if_req.ifr_flags & IFF_RUNNING);
+    this->status = is_up ? 100.0 : 0.0;
+
+    return this->status;
 }
 
 void interface_infer_type(struct interface* this) {
