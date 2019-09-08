@@ -112,13 +112,13 @@ double interface_check_status(struct interface* this) {
 
     close(socket_id);
 
-    if (!(if_req.ifr_flags & IFF_UP) && (if_req.ifr_flags & IFF_RUNNING)) {
-        this->status = STATUS_DOWN;
-    }
-    else {
+    if ((if_req.ifr_flags & IFF_UP) && (if_req.ifr_flags & IFF_RUNNING)) {
         this->status = this->type == WIRELESS
             ? wireless_quality(this->name)
             : 100.0;
+    }
+    else {
+        this->status = STATUS_DOWN;
     }
 
     return this->status;
