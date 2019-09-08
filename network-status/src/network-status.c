@@ -81,15 +81,12 @@
 #include "interface.h"
 
 void interfaces_filter(struct interface** ifs) {
-    struct if_nameindex* if_name_beg;
-    struct if_nameindex* if_name;
-    struct interface* if_curr;
-    struct interface** prev;
-    struct interface* tmp = NULL;
-    struct interface** if_ok = &tmp;
+    struct if_nameindex* if_name_beg, * if_name;
+    struct interface* if_curr, * tmp = NULL;
+    struct interface** prev, ** if_ok = &tmp;
 
     if (!(if_name_beg = if_nameindex())) {
-        perror("Error in filter_interfaces");
+        perror("interfaces_filter - error while calling if_nameindex");
         exit(EXIT_FAILURE);
     }
 
@@ -148,11 +145,6 @@ void interfaces_print_indicator(struct args* args) {
 
 int main(int argc, char** argv) {
     struct args args;
-
-    // double d = 233.0;
-    // scanf(argv[1], &d);
-    // printf("%lf\n", d);
-    // exit(EXIT_FAILURE);
 
     parse_arguments(argc, argv, &args);
 
